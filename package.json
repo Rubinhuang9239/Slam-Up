@@ -13,6 +13,7 @@
     "homemodel"
   ],
   "author": "Rubin Huang",
+  "repository": "github:rubinhuang9239/Slam-Up",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4",
