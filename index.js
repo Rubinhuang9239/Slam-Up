@@ -74,7 +74,7 @@ const readSerialData = (data, port) => {
 }
 
 const showPortClose = (msg, comName) => {
-	console.log(`Port closed: ${comName},\nwith message:${msg}`);
+	console.log(`Port closed: ${comName},\nwith message: ${msg}`);
 	startRetrySearchPort();
 }
 
