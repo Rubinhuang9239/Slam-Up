@@ -9,12 +9,13 @@ httpServer.listen(3000, "127.0.0.1", () => {
 app.use(express.static("public"));
 
 //----------------Serial--------------------//
-const portNameChoice = ["/dev/ttyACM0"];
+const portNameChoice = ["/dev/ttyACM0", "/dev/tty.usbmodem143201"];
 const baudRate = 9600;
 const lineEnding = '\n';
 let sendData = [0,0,0,0,0,0];
 
 const searchPort = () =>{
+	console.log("Start looking for available port.")
 	SerialPort.list( (err, ports) => {
 		if(err){
 			console.log(err);
@@ -23,7 +24,7 @@ const searchPort = () =>{
 	
 		let portName = undefined;
 		ports.some( port => {
-			console.log(port);
+			// console.log(port.comName);
 			for(const choice of portNameChoice){
 				if(port.comName === choice){
 					portName = port.comName;
@@ -34,9 +35,11 @@ const searchPort = () =>{
 	
 		console.log( portName? `Initial connection to: ${portName}`: `No desired port founded.`)
 	
-		if(portName){
-			setupSerialConnection(portName, baudRate, lineEnding);
+		if(!portName){
+			startRetrySearchPort();
+			return;
 		}
+		setupSerialConnection(portName, baudRate, lineEnding);
 	});	
 }
 
@@ -47,7 +50,7 @@ const setupSerialConnection = (inputPortName, inputBaudRate, inputLineEnding) =>
 
 	// these are the definitions for the serial events:
 	myPort.on('open', ()=>{showPortOpen(myPort)});    // called when the serial port opens
-	myPort.on('close', showPortClose);  // called when the serial port closes
+	myPort.on('close', msg => {showPortClose(msg, myPort.path)});  // called when the serial port closes
 	myPort.on('error', showError);   // called when there's an error with the serial port
 	parser.on('data', data=>{readSerialData(data,myPort)});  // called when there's new data incoming
 
@@ -70,12 +73,17 @@ const readSerialData = (data, port) => {
 		);
 }
 
-const showPortClose = (portName) => {
-	console.log(`Port closed: ${portName}`);
+const showPortClose = (msg, comName) => {
+	console.log(`Port closed: ${comName},\nwith message:${msg}`);
+	startRetrySearchPort();
 }
 
 const showError = (error) => {
 	console.log('Serial port error: ' + error);
+}
+
+const startRetrySearchPort = () => {
+	setTimeout(searchPort,1000);
 }
 
 // Kick off
