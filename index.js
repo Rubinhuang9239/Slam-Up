@@ -1,6 +1,9 @@
 const express = require("express");
 const http = require("http");
 const SerialPort = require("serialport");
+
+const config = require("./config");
+
 const app = express();
 const httpServer = http.createServer(app);
 httpServer.listen(3000, "127.0.0.1", () => {
@@ -9,7 +12,6 @@ httpServer.listen(3000, "127.0.0.1", () => {
 app.use(express.static("public"));
 
 //----------------Serial--------------------//
-const portNameChoice = ["/dev/ttyACM0", "/dev/tty.usbmodem143201"];
 const baudRate = 9600;
 const lineEnding = '\n';
 let sendData = [0,0,0,0,0,0];
@@ -25,7 +27,7 @@ const searchPort = () =>{
 		let portName = undefined;
 		ports.some( port => {
 			// console.log(port.comName);
-			for(const choice of portNameChoice){
+			for(const choice of config.portChoices){
 				if(port.comName === choice){
 					portName = port.comName;
 					return true;
@@ -44,15 +46,15 @@ const searchPort = () =>{
 }
 
 const setupSerialConnection = (inputPortName, inputBaudRate, inputLineEnding) =>{
-	const myPort = new SerialPort(inputPortName, {baudRate:inputBaudRate});// open the port
-	const parser = new SerialPort.parsers.Readline(inputLineEnding);	// make instance of Readline parser
-	myPort.pipe(parser);													// pipe the serial stream to the parser
+	const myPort = new SerialPort(inputPortName, {baudRate:inputBaudRate});
+	const parser = new SerialPort.parsers.Readline(inputLineEnding);
+	myPort.pipe(parser);
 
-	// these are the definitions for the serial events:
-	myPort.on('open', ()=>{showPortOpen(myPort)});    // called when the serial port opens
-	myPort.on('close', msg => {showPortClose(msg, myPort.path)});  // called when the serial port closes
-	myPort.on('error', showError);   // called when there's an error with the serial port
-	parser.on('data', data=>{readSerialData(data,myPort)});  // called when there's new data incoming
+	// serial events:
+	myPort.on('open', ()=>{showPortOpen(myPort)});
+	myPort.on('close', msg => {showPortClose(msg, myPort.path)});
+	myPort.on('error', showError);
+	parser.on('data', data=>{readSerialData(data,myPort)});
 
 }
 
@@ -88,3 +90,7 @@ const startRetrySearchPort = () => {
 
 // Kick off
 searchPort();
+
+const resetScannerMech = () => {
+	// port Send reset code
+}
