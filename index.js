@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("http");
 const SerialPort = require("serialport");
+const SocketIO = require("socket.io");
 
 const config = require("./config");
 
@@ -10,6 +11,24 @@ httpServer.listen(3000, "127.0.0.1", () => {
     console.log("Demo server runs on 127.0.0.1:3000");
 });
 app.use(express.static("public"));
+
+const io = SocketIO(httpServer);
+
+io.on("connection", socket => {
+	//console.log("conn",socket.id);
+
+	socket.on("addScanRequest",() => {
+		console.log("request a new scan!!");
+	});
+
+	socket.on("downloadPCLRequest",() => {
+		console.log("request a download PCL!!");
+	});
+
+	// socket.on("disconnect", () => {
+	// 	console.log("disconn", socket.id);
+	// });
+});
 
 //----------------Serial--------------------//
 const baudRate = 9600;
