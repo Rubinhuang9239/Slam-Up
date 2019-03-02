@@ -1,13 +1,12 @@
 #include <Servo.h>
 
-Servo myservo;  // create servo object to control a servo
-// twelve servo objects can be created on most boards
+Servo myservo;
 
-int pos = 0;    // variable to store the servo position
+int pos = 0;
 int cntCommand = -1;
 
 void setup() {
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  myservo.attach(9);
 
   Serial.begin(9600);
   Serial.setTimeout(10);
@@ -51,15 +50,16 @@ void commandRouter() {
 }
 
 void runPitchCycle() {
-  for (pos = 60; pos <= 175; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+  for (pos = 60; pos <= 175; pos += 1) {
+    myservo.write(pos);
+    delay(15);
   }
-  for (pos = 175; pos >= 60; pos -= 1) { // goes from 180 degrees to 0 degrees
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+  for (pos = 175; pos >= 60; pos -= 1) {
+    myservo.write(pos);
+    delay(15);
   }
   // overWrites current cmd
   cntCommand = -1;
+  // tell node the cycle is completed.
+  Serial.print("pitch_cycle_done\n");
 }

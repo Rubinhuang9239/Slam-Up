@@ -18,12 +18,11 @@ io.on("connection", socket => {
 	//console.log("conn",socket.id);
 
 	socket.on("addScanRequest",() => {
-		console.log("request a new scan!!");
 		reqestScanMech();
 	});
 
 	socket.on("downloadPCLRequest",() => {
-		console.log("request a download PCL!!");
+		// console.log("request a download PCL!!");
 	});
 
 	// socket.on("disconnect", () => {
@@ -34,7 +33,7 @@ io.on("connection", socket => {
 //----------------Serial--------------------//
 const baudRate = 9600;
 const lineEnding = '\n';
-let sendData = [0,0,0,0,0,0];
+let busyBlocker = false;
 
 let MCUPort = undefined;
 
@@ -73,7 +72,7 @@ const setupSerialConnection = (inputPortName, inputBaudRate, inputLineEnding) =>
 	MCUPort.pipe(parser);
 
 	// serial events:
-	MCUPort.on('open', ()=>{showPortOpen(MCUPort)});
+	MCUPort.on('open', data=>{showPortOpen(MCUPort)});
 	MCUPort.on('close', msg => {showPortClose(msg, MCUPort.path)});
 	MCUPort.on('error', showError);
 	parser.on('data', data=>{readSerialData(data, MCUPort)});
@@ -82,12 +81,17 @@ const setupSerialConnection = (inputPortName, inputBaudRate, inputLineEnding) =>
 const showPortOpen = (port) => {
 	console.log('port open. Data rate: ' + port.baudRate);
 	setTimeout(()=>{
-		port.write(`${sendData.length},${sendData.toString()},`);
+		port.write(config.commands.resetAll);
 	},2000); // initial the handshake
 }
 
 const readSerialData = (data, port) => {
 		console.log(`serial data ==> ${data}`);
+		switch(data){
+			case 'pitch_cycle_done':
+				busyBlocker = false;
+				break;
+		}
 		// sendData = sendData.map(()=>{
 		// 		return Math.round(Math.random()*300);
 		// })
@@ -113,8 +117,10 @@ const startRetrySearchPort = () => {
 searchPort();
 
 const reqestScanMech = () => {
-	if(!MCUPort){return;}
+	if(!MCUPort || busyBlocker){return;}
+	console.log("request a new scan!!");
 	MCUPort.write(config.commands.startScan);
+	busyBlocker = true;
 }
 
 const resetScannerMech = () => {

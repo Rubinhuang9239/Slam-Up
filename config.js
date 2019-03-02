@@ -1,6 +1,6 @@
 const config = {
 
-    portChoices:  ["/dev/ttyACM0", "/dev/tty.usbmodem1412401", "/dev/tty.usbmodem143201"],
+    portChoices:  ["/dev/ttyACM0", "/dev/tty.usbmodem1412401", "/dev/tty.usbmodem146301"],
     commands:{
         resetAll: "0",
         startScan: "1",
