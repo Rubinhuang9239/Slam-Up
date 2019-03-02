@@ -19,6 +19,7 @@ io.on("connection", socket => {
 
 	socket.on("addScanRequest",() => {
 		console.log("request a new scan!!");
+		reqestScanMech();
 	});
 
 	socket.on("downloadPCLRequest",() => {
@@ -35,6 +36,8 @@ const baudRate = 9600;
 const lineEnding = '\n';
 let sendData = [0,0,0,0,0,0];
 
+let MCUPort = undefined;
+
 const searchPort = () =>{
 	console.log("Start looking for available port.")
 	SerialPort.list( (err, ports) => {
@@ -45,7 +48,7 @@ const searchPort = () =>{
 	
 		let portName = undefined;
 		ports.some( port => {
-			// console.log(port.comName);
+			console.log(port.comName);
 			for(const choice of config.portChoices){
 				if(port.comName === choice){
 					portName = port.comName;
@@ -65,16 +68,15 @@ const searchPort = () =>{
 }
 
 const setupSerialConnection = (inputPortName, inputBaudRate, inputLineEnding) =>{
-	const myPort = new SerialPort(inputPortName, {baudRate:inputBaudRate});
+	MCUPort = new SerialPort(inputPortName, {baudRate:inputBaudRate});
 	const parser = new SerialPort.parsers.Readline(inputLineEnding);
-	myPort.pipe(parser);
+	MCUPort.pipe(parser);
 
 	// serial events:
-	myPort.on('open', ()=>{showPortOpen(myPort)});
-	myPort.on('close', msg => {showPortClose(msg, myPort.path)});
-	myPort.on('error', showError);
-	parser.on('data', data=>{readSerialData(data,myPort)});
-
+	MCUPort.on('open', ()=>{showPortOpen(MCUPort)});
+	MCUPort.on('close', msg => {showPortClose(msg, MCUPort.path)});
+	MCUPort.on('error', showError);
+	parser.on('data', data=>{readSerialData(data, MCUPort)});
 }
 
 const showPortOpen = (port) => {
@@ -86,12 +88,12 @@ const showPortOpen = (port) => {
 
 const readSerialData = (data, port) => {
 		console.log(`serial data ==> ${data}`);
-		sendData = sendData.map(()=>{
-				return Math.round(Math.random()*300);
-		})
-		port.write(
-				`${sendData.length},${sendData.toString()},`
-		);
+		// sendData = sendData.map(()=>{
+		// 		return Math.round(Math.random()*300);
+		// })
+		// port.write(
+		// 		`${sendData.length},${sendData.toString()},`
+		// );
 }
 
 const showPortClose = (msg, comName) => {
@@ -110,6 +112,12 @@ const startRetrySearchPort = () => {
 // Kick off
 searchPort();
 
+const reqestScanMech = () => {
+	if(!MCUPort){return;}
+	MCUPort.write(config.commands.startScan);
+}
+
 const resetScannerMech = () => {
-	// port Send reset code
+	if(!MCUPort){return;}
+	MCUPort.write(config.commands.resetAll);
 }
