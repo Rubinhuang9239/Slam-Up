@@ -48,7 +48,7 @@ const searchPort = () =>{
 	
 		let portName = undefined;
 		ports.some( port => {
-			console.log(port.comName);
+			// console.log(port.comName);
 			for(const choice of config.portChoices){
 				if(port.comName === choice){
 					portName = port.comName;
