@@ -7,6 +7,7 @@ int cntCommand = -1;
 
 void setup() {
   myservo.attach(9);
+  resetAll();
 
   Serial.begin(9600);
   Serial.setTimeout(10);
@@ -68,4 +69,6 @@ void runPitchCycle() {
 void resetAll(){
   myservo.write(175);
   cntCommand = -1;
+  // tell node the cycle is completed.
+  Serial.print("reset_all_done\n");
 }

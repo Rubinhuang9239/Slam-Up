@@ -93,6 +93,7 @@ const readSerialData = (data, port) => {
 		console.log(`serial data ==> ${data}`);
 		switch(data){
 			case 'pitch_cycle_done':
+			case 'reset_all_done':
 				busyBlocker = false;
 				break;
 		}
