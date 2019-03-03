@@ -21,6 +21,10 @@ io.on("connection", socket => {
 		reqestScanMech();
 	});
 
+	socket.on("resetAllRequest",() => {
+		resetScanMech();
+	});
+
 	socket.on("downloadPCLRequest",() => {
 		// console.log("request a download PCL!!");
 	});
@@ -117,13 +121,16 @@ const startRetrySearchPort = () => {
 searchPort();
 
 const reqestScanMech = () => {
-	if(!MCUPort || busyBlocker){return;}
+	if(!MCUPort || busyBlocker){return false;}
 	console.log("request a new scan!!");
 	MCUPort.write(config.commands.startScan);
 	busyBlocker = true;
+	return true;
 }
 
-const resetScannerMech = () => {
-	if(!MCUPort){return;}
+const resetScanMech = () => {
+	if(!MCUPort || busyBlocker){return false;}
 	MCUPort.write(config.commands.resetAll);
+	busyBlocker = true;
+	return true;
 }

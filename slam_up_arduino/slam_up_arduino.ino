@@ -29,6 +29,7 @@ void commandRouter() {
     case -1: // standby
       break;
     case 0:
+      resetAll();
       break;
     case 1:
       runPitchCycle();
@@ -50,11 +51,11 @@ void commandRouter() {
 }
 
 void runPitchCycle() {
-  for (pos = 60; pos <= 175; pos += 1) {
+  for (pos = 175; pos >= 60; pos -= 1) {
     myservo.write(pos);
     delay(15);
   }
-  for (pos = 175; pos >= 60; pos -= 1) {
+  for (pos = 60; pos <= 175; pos += 1) {
     myservo.write(pos);
     delay(15);
   }
@@ -62,4 +63,9 @@ void runPitchCycle() {
   cntCommand = -1;
   // tell node the cycle is completed.
   Serial.print("pitch_cycle_done\n");
+}
+
+void resetAll(){
+  myservo.write(175);
+  cntCommand = -1;
 }
